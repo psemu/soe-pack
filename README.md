@@ -6,6 +6,8 @@ A library and utility for accessing SOE pack files
 Building
 =====
 
+Install [Node](http://nodejs.org/) and run:
+
     npm install
 
 Edit paths in batch scripts to match your own setup.
