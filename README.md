@@ -19,7 +19,7 @@ Create manifest and diffs for game (e.g. PS2 test, PS2 live, EQL):
     update_live.bat
     update_eql.bat
 
-Manifest and diff files are placed in "manifests/<gameid>/".
+Manifest and diff files are placed in "manifests/[gameid]/".
 
 
 Extract all added and modified assets from latest diff:
@@ -28,4 +28,4 @@ Extract all added and modified assets from latest diff:
     extract_diff_test.bat
     extract_diff_test.bat
 
-Assets are extracted to "assets/<gameid>".
+Assets are extracted to "assets/[gameid]/".
