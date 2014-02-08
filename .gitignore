@@ -1,0 +1,7 @@
+node_modules
+assets/live/**
+assets/test/**
+assets/eql/**
+manifests/live/**
+manifests/test/**
+manifests/eql/**
