@@ -10,6 +10,8 @@ Install [Node](http://nodejs.org/) and run:
 
     npm install
 
+in project folder.
+
 Edit paths in batch scripts to match your own setup.
 
 Running
