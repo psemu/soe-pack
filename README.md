@@ -29,7 +29,7 @@ Manifest and diff files are placed in "manifests/[gameid]/".
 Extract all added and modified assets from latest diff:
 
     extract_diff_test.bat
-    extract_diff_test.bat
-    extract_diff_test.bat
+    extract_diff_live.bat
+    extract_diff_eql.bat
 
 Assets are extracted to "assets/[gameid]/".
