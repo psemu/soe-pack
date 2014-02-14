@@ -459,8 +459,8 @@ function extractFile(inPath, file, excludeFiles) {
             readPackFile(inPath, pack, function(err, assets) {
                 for (j=0;j<assets.length;j++) {
                     if (assets[j].name == file) {
-                        console.log("Extracting file " + file + " from " + packs[i]);
-                        fd = fs.openSync(path.join(inPath, packs[i]), "r");
+                        console.log("Extracting file " + file + " from " + pack);
+                        fd = fs.openSync(path.join(inPath, pack), "r");
                         buffer = new Buffer(assets[j].length);
                         fs.readSync(fd, buffer, 0, assets[j].length, assets[j].offset);
                         fs.closeSync(fd);
