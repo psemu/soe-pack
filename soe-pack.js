@@ -446,6 +446,29 @@ function extractAll(inPath, outPath, excludeFiles) {
     nextPack();
 }
 
+function extractPack(inPath, outPath) {
+    var startTime = Date.now();
+
+    if (!fs.existsSync(outPath)) {
+        throw "extractPack(): outPath does not exist";
+    }
+    
+    console.log("Reading pack file: " + inPath);
+    
+    readPackFile("", inPath, function(err, assets) {
+        console.log("Extracting " + assets.length + " assets from pack file");
+        var asset, n = assets.length;
+        fs.readFile(inPath, function(err, data) {
+            for (var i=0;i<assets.length;i++) {
+                asset = assets[i];
+                fs.writeFile(path.join(outPath, asset.name), data.slice(asset.offset, asset.offset+asset.length),
+                    function() {}
+                );
+            }
+        });
+    });
+}
+
 function extractFile(inPath, file, excludeFiles) {
     var packs = listPackFiles(inPath, excludeFiles),
         assets, buffer, fd,
@@ -480,6 +503,7 @@ function extractFile(inPath, file, excludeFiles) {
 
 exports.pack = pack;
 exports.extractAll = extractAll;
+exports.extractPack = extractPack;
 exports.extractDiff = extractDiff;
 exports.extractFile = extractFile;
 exports.diff = diff;

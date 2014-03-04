@@ -1,5 +1,5 @@
 @echo off
-set EDITOR="C:\Program Files (x86)\Notepad++\notepad++.exe"
+set EDITOR="C:\Program Files\Sublime Text 3\sublime_text.exe"
 
 if "%1"=="" exit elseif "%2"=="" exit
 

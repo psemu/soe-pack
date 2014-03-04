@@ -36,6 +36,11 @@ switch (mode) {
             outPath = process.argv[4];
         packer.extractAll(inPath, outPath, excludeFiles);
         break;
+    case "extractpack": 
+        var inPath = process.argv[3],
+            outPath = process.argv[4];
+        packer.extractPack(inPath, outPath, excludeFiles);
+        break;
     case "extractdiff": 
         var diffPath = process.argv[3],
             packPath = process.argv[4],
