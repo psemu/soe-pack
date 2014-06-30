@@ -469,33 +469,48 @@ function extractPack(inPath, outPath) {
     });
 }
 
-function extractFile(inPath, file, excludeFiles) {
+function extractFile(inPath, file, outPath, excludeFiles, useRegExp) {
     var packs = listPackFiles(inPath, excludeFiles),
-        assets, buffer, fd,
+        assets, buffer, fd, re, numFound,
         i, j;
+    if (!outPath) {
+        outPath = ".";
+    }
     console.log("Reading pack files in " + inPath);
-    
+    if (useRegExp) {
+        re = new RegExp(file)
+    }
+    numFound = 0;
     function nextPack() {
         if (packs.length) {
             var pack = packs.shift(),
                 assets;
             readPackFile(inPath, pack, function(err, assets) {
-                for (j=0;j<assets.length;j++) {
-                    if (assets[j].name == file) {
-                        console.log("Extracting file " + file + " from " + pack);
+                for (var j=0;j<assets.length;j++) {
+                    var isMatch = false;
+                    if (useRegExp) {
+                        isMatch = re.test(assets[j].name);
+                    } else if (assets[j].name == file) {
+                        isMatch = true;
+                    }
+                    if (isMatch) {
+                        numFound++;
+                        console.log("Extracting file " + assets[j].name + " from " + pack);
                         fd = fs.openSync(path.join(inPath, pack), "r");
                         buffer = new Buffer(assets[j].length);
                         fs.readSync(fd, buffer, 0, assets[j].length, assets[j].offset);
                         fs.closeSync(fd);
-                        fs.writeFileSync(file, buffer);
-                        console.log("Done.");
-                        return;
+                        fs.writeFileSync(path.join(outPath, assets[j].name), buffer);
                     }
                 }
                 nextPack();
             });
         } else {
-            console.log("Asset not found in any pack: " + file);
+            if (numFound) {
+                console.log("Extracted " + numFound + " matching asset" + (numFound > 1 ? "s" : ""));
+            } else {
+                console.log("No matching assets found");
+            }
         }
     }
     nextPack();

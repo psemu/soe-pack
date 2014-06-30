@@ -49,8 +49,15 @@ switch (mode) {
         break;
     case "extract": 
         var inPath = process.argv[3],
-            file = process.argv[4];
-        packer.extractFile(inPath, file, excludeFiles);
+            file = process.argv[4],
+            outPath = process.argv[5];
+        packer.extractFile(inPath, file, outPath, excludeFiles);
+        break;
+    case "extractregexp": 
+        var inPath = process.argv[3],
+            file = process.argv[4],
+            outPath = process.argv[5];
+        packer.extractFile(inPath, file, outPath, excludeFiles, true);
         break;
     case "append": 
         var inFile1 = process.argv[3],
