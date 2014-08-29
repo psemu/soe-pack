@@ -1,6 +1,6 @@
-var fs = require("fs");
-var path = require("path");
-var crc32 = require("buffer-crc32");
+var fs = require("fs"),
+    path = require("path"),
+    crc32 = require("buffer-crc32");
 
 var MAXOPENFILES = 1000;
 
@@ -239,28 +239,40 @@ function pack(inPath, outPath) {
         i, j, nextOffset, files, stat,
         fileOffset, dataOffset, data,
         fileHeaderLength, dataLength,
-        folders, collections = [];
+        folders, collections = [], collectionFolder;
     
     if (!fs.existsSync(inPath)) {
-        throw "pack(): inPath does not exist";
+        throw "pack(): inPath does not exist [" + inPath + "]";
+    }
+
+    if (fs.existsSync(outPath)) {
+        stat = fs.statSync(outPath);
+        if (stat.isDirectory()) {
+            throw "pack(): outPath is a directory [" + outPath + "]";
+        }
     }
     
     folders = fs.readdirSync(inPath);
     for (i=0;i<folders.length;i++) {
-        stat = fs.statSync(inPath + "/" + folders[i]);
+        collectionFolder = path.join(inPath, folders[i]);
+        stat = fs.statSync(collectionFolder);
         if (stat.isDirectory()) {
-            files = fs.readdirSync(inPath + "/" + folders[i]);
-            collections.push(files);
+            files = fs.readdirSync(collectionFolder);
+            collections.push({
+                folder: collectionFolder,
+                files: files
+            });
         }
     }
 
     for (i=0;i<collections.length;i++) {
-        files = collections[i];
+        files = collections[i].files;
+        collectionFolder = collections[i].folder;
         fileHeaderLength = 0;
         dataLength = 0;
         for (j=0;j<files.length;j++) {
             fileHeaderLength += 16 + files[j].length;
-            stat = fs.statSync(inpath + "/" + folders[i] + "/" + files[j]);
+            stat = fs.statSync(path.join(collectionFolder, files[j]));
             dataLength += stat.size;
         }
             
@@ -272,7 +284,7 @@ function pack(inPath, outPath) {
         dataOffset = 0;
             
         for (j=0;j<files.length;j++) {
-            data = fs.readFileSync(files[j]);
+            data = fs.readFileSync(path.join(collectionFolder, files[j]));
 
             fileHeaderBuffer.writeUInt32BE(files[j].length, fileOffset);
             fileHeaderBuffer.write(files[j], fileOffset + 4, files[j].length);
@@ -297,7 +309,7 @@ function pack(inPath, outPath) {
 
         packBuffer = Buffer.concat([packBuffer, folderHeaderBuffer, fileHeaderBuffer, fileDataBuffer]);
     }
-    fs.writeFile(outPath, packBuffer);
+    fs.writeFileSync(outPath, packBuffer);
     return true;
 }
 

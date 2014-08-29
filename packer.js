@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-var path = require("path");
-var packer = require("./soe-pack.js");
-
-var mode = process.argv[2];
-var excludeFiles = ["Assets_256.pack"];
+var path = require("path"),
+    packer = require("./soe-pack.js"),
+    mode = process.argv[2],
+    excludeFiles = ["Assets_256.pack"];
 
 switch (mode) {
     case "pack": 
@@ -12,7 +11,9 @@ switch (mode) {
         if (!outPath) {
             outPath = "Assets_" + Date.now() + ".pack";
         }
+        console.log("Packing assets in " + inPath + " to file " + outPath);
         packer.pack(inPath, outPath);
+        console.log("Done!");
         break;
     case "manifest": 
         var inPath = process.argv[3],
