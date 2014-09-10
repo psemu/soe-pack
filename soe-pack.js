@@ -80,6 +80,38 @@ function readPackFile(filePath, file, callback) {
     });
 }
 
+
+function readPackFileFromBuffer(data, callback) {
+    var assets = [], asset,
+        fd, i, offset = 0,
+        numAssets, nextOffset;
+
+    do {
+        nextOffset = data.readUInt32BE(offset)
+        offset += 4;
+        numAssets = data.readUInt32BE(offset);
+        offset += 4;
+        for (i=0;i<numAssets;i++) {
+            asset = {};
+            asset.file = file;
+            var namelength = data.readUInt32BE(offset);
+            offset += 4;
+            asset.name = data.toString("utf8", offset, offset + namelength);
+            asset.name_lower = asset.name.toLowerCase();
+            offset += namelength;
+            asset.offset = data.readUInt32BE(offset);
+            offset += 4;
+            asset.length = data.readUInt32BE(offset);
+            offset += 4;
+            asset.crc32 = data.readUInt32BE(offset);
+            offset += 4;
+            assets.push(asset);
+        }
+        offset = nextOffset;
+    } while (nextOffset);
+    callback(err, assets);
+}
+
 function append(inFile1, inFile2, outFile) {
     if (!fs.existsSync(inFile1)) {
         throw "append(): inFile1 does not exist";
@@ -465,10 +497,10 @@ function extractPack(inPath, outPath) {
         throw "extractPack(): outPath does not exist";
     }
     
-    console.log("Reading pack file: " + inPath);
+    //console.log("Reading pack file: " + inPath);
     
     readPackFile("", inPath, function(err, assets) {
-        console.log("Extracting " + assets.length + " assets from pack file");
+        //console.log("Extracting " + assets.length + " assets from pack file");
         var asset, n = assets.length;
         fs.readFile(inPath, function(err, data) {
             for (var i=0;i<assets.length;i++) {
@@ -480,6 +512,14 @@ function extractPack(inPath, outPath) {
         });
     });
 }
+
+
+function extractToBuffers(data, callback) {
+    readPackFileFromBuffer(data, function(err, assets) {
+        callback(assets);
+    });
+}
+
 
 function extractFile(inPath, file, outPath, excludeFiles, useRegExp) {
     var packs = listPackFiles(inPath, excludeFiles),
@@ -531,6 +571,7 @@ function extractFile(inPath, file, outPath, excludeFiles, useRegExp) {
 exports.pack = pack;
 exports.extractAll = extractAll;
 exports.extractPack = extractPack;
+exports.extractToBuffers = extractToBuffers;
 exports.extractDiff = extractDiff;
 exports.extractFile = extractFile;
 exports.diff = diff;
