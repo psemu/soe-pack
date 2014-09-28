@@ -1,19 +1,11 @@
 {
-  "name": "soe-pack",
+  "name": "soe-pack-gh-pages",
   "version": "0.1.0",
-  "description": "A library and utility for accessing SOE pack files",
-  "homepage": "https://github.com/jseidelin/soe-pack",
+  "description": "",
   "author": "Jacob Seidelin <jseidelin@nihilogic.dk> (https://github.com/jseidelin)",
-  "license": {
-    "type": "MIT",
-    "url": "http://github.com/jseidelin/soe-pack/raw/master/LICENSE"
-  },
-  "main": "soe-pack.js",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/jseidelin/soe-pack.git"
-  },
   "dependencies": {
-    "buffer-crc32": ">=0.2.1"
+    "soe-pack": "git+ssh://git@github.com:jseidelin/soe-pack.git",
+    "path-browserify": ">=0.0.0",
+    "browserify-fs": ">=1.0.0"
   }
 }

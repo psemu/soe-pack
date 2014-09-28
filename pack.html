@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>SOE Packer</title>
+    <style>
+        html, body {
+            margin: 0;
+            font-family: Arial;
+            font-size: 14px;
+        }
+        body {
+            padding: 40px;
+        }
+        #waiting {
+            text-align:center;
+            width: 200px;
+            height: 16px;
+            position:absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -100px;
+            margin-top: -8px;
+            display: none;
+        }
+        #drop-here {
+            text-align:center;
+            width: 300px;
+            height: 20px;
+            font-size: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #aaa;
+            position:absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -120px;
+            margin-top: -10px;
+        }
+
+    </style>
+    <script src="jquery-2.0.3.min.js"></script>
+    <script src="bundle.js"></script>
+    <script>
+        var Pack = require("soe-pack");
+
+        $(document).ready(function() {
+            var pack = Pack.packFromBuffers([]);
+            
+            $(document).on("dragover", function(e) {
+                e.preventDefault();
+            });
+            $(document).on("drop", function(e) {
+                e.preventDefault();
+                $("#drop-here").hide();
+                $("#waiting").show();
+                var files = e.originalEvent.dataTransfer.files,
+                    file, reader, data;
+                if (files.length > 0) {
+                    file = files[0];
+
+                    if (typeof FileReader !== "undefined") {
+                        reader = new FileReader();
+                        reader.onload = function (e) {
+                            data = e.target.result;
+
+                            var compdata = {
+                                data : new Uint8Array(data),
+                                offset : 0,
+                                readByte : function() {
+                                    return this.data[this.offset++];
+                                }
+                            };
+                            
+                            var decompdata = {
+                                data : [],
+                                offset : 0,
+                                writeByte : function(value) {
+                                    this.data[this.offset++] = value;
+                                }
+                            };
+                            try {
+                                LZMA.decompressFile(compdata, decompdata);
+                            } catch(e) {
+                                alert(e);
+                                return;
+                            }
+                            var manifest = Manifest.parse(decompdata.data);
+
+                            displayManifest(file.name, manifest);
+                            $("#waiting").hide();
+                        };
+                        reader.readAsArrayBuffer(file);
+
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="drop-here">Drop files here</div>
+    <div id="waiting">Packing files...</div>
+</body>
+</html>
