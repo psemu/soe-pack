@@ -2262,8 +2262,6 @@ function packFromBuffers(files) {
     folderHeaderBuffer.copy(finalData, packBuffer.length, 0);
     fileHeaderBuffer.copy(finalData, packBuffer.length + folderHeaderBuffer.length, 0);
     fileDataBuffer.copy(finalData, packBuffer.length + folderHeaderBuffer.length + fileHeaderBuffer.length, 0);
-    //packBuffer = Buffer.concat([packBuffer, folderHeaderBuffer, fileHeaderBuffer, fileDataBuffer]);
-
     return finalData;
 }
 
