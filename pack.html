@@ -44,12 +44,17 @@
     <script>
         var Pack = require("soe-pack");
         var Buffer = require("buffer").Buffer;
+        var busy = false;
 
         $(document).ready(function() {
             $(document).on("dragover", function(e) {
                 e.preventDefault();
             });
             $(document).on("drop", function(e) {
+                if (busy) {
+                    return;
+                }
+                busy = true;
                 e.preventDefault();
                 $("#drop-here").hide();
                 $("#waiting").show();
@@ -84,6 +89,7 @@
                         a.dispatchEvent(event);
                         $("#waiting").hide();
                         $("#drop-here").show();
+                        busy = false;
                     }
                 }
                 readNextFile();
