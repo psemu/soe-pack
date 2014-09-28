@@ -43,10 +43,9 @@
     <script src="bundle.js"></script>
     <script>
         var Pack = require("soe-pack");
+        var Buffer = require("buffer").Buffer;
 
         $(document).ready(function() {
-            var pack = Pack.packFromBuffers([]);
-            
             $(document).on("dragover", function(e) {
                 e.preventDefault();
             });
@@ -54,46 +53,40 @@
                 e.preventDefault();
                 $("#drop-here").hide();
                 $("#waiting").show();
-                var files = e.originalEvent.dataTransfer.files,
-                    file, reader, data;
-                if (files.length > 0) {
-                    file = files[0];
+                var files = e.originalEvent.dataTransfer.files;
+                var packFiles = [];
 
-                    if (typeof FileReader !== "undefined") {
-                        reader = new FileReader();
+                files = [].slice.call(files, 0);
+
+                function readNextFile() {
+                    if (files.length) {
+                        var file = files.shift();
+                        var reader = new FileReader();
                         reader.onload = function (e) {
-                            data = e.target.result;
-
-                            var compdata = {
-                                data : new Uint8Array(data),
-                                offset : 0,
-                                readByte : function() {
-                                    return this.data[this.offset++];
-                                }
-                            };
-                            
-                            var decompdata = {
-                                data : [],
-                                offset : 0,
-                                writeByte : function(value) {
-                                    this.data[this.offset++] = value;
-                                }
-                            };
-                            try {
-                                LZMA.decompressFile(compdata, decompdata);
-                            } catch(e) {
-                                alert(e);
-                                return;
-                            }
-                            var manifest = Manifest.parse(decompdata.data);
-
-                            displayManifest(file.name, manifest);
-                            $("#waiting").hide();
+                            packFiles.push({
+                                data: new Buffer(new Uint8Array(e.target.result)),
+                                name: file.name
+                            });
+                            readNextFile();
                         };
                         reader.readAsArrayBuffer(file);
-
+                    } else {
+                        var packData = Pack.packFromBuffers(packFiles),
+                            blob = new Blob([packData], {type: "application/x-soepack"});
+                            filename = "Assets_" + Date.now() + ".pack",
+                            url = window.URL.createObjectURL(blob),
+                            a = document.createElement("a"),
+                            event = document.createEvent("MouseEvents");
+                        a.href = url;
+                        a.download = filename;
+                        a.target = "_blank";
+                        event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, null);
+                        a.dispatchEvent(event);
+                        $("#waiting").hide();
+                        $("#drop-here").show();
                     }
                 }
+                readNextFile();
             });
         });
     </script>
