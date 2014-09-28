@@ -85,7 +85,6 @@ function readPackFileFromBuffer(data, callback) {
     var assets = [], asset,
         fd, i, offset = 0,
         numAssets, nextOffset;
-
     do {
         nextOffset = data.readUInt32BE(offset)
         offset += 4;
@@ -93,7 +92,6 @@ function readPackFileFromBuffer(data, callback) {
         offset += 4;
         for (i=0;i<numAssets;i++) {
             asset = {};
-            asset.file = file;
             var namelength = data.readUInt32BE(offset);
             offset += 4;
             asset.name = data.toString("utf8", offset, offset + namelength);
@@ -105,11 +103,13 @@ function readPackFileFromBuffer(data, callback) {
             offset += 4;
             asset.crc32 = data.readUInt32BE(offset);
             offset += 4;
+            asset.data = data.slice(asset.offset, asset.offset + asset.length);
             assets.push(asset);
+
         }
         offset = nextOffset;
     } while (nextOffset);
-    callback(err, assets);
+    callback(null, assets);
 }
 
 function append(inFile1, inFile2, outFile) {
@@ -330,7 +330,7 @@ function pack(inPath, outPath) {
             dataOffset += data.length;
         }
             
-        if (i < folders.length-1) {
+        if (i < collections.length-1) {
             nextOffset = packBuffer.length + folderHeaderBuffer.length + fileHeaderBuffer.length + fileDataBuffer.length;
         } else {
             nextOffset = 0;
@@ -516,12 +516,12 @@ function extractPack(inPath, outPath) {
 
 function extractToBuffers(data, callback) {
     readPackFileFromBuffer(data, function(err, assets) {
-        callback(assets);
+        callback(err, assets);
     });
 }
 
 
-function extractFile(inPath, file, outPath, excludeFiles, useRegExp) {
+function extractFile(inPath, file, outPath, excludeFiles, useRegExp, callback) {
     var packs = listPackFiles(inPath, excludeFiles),
         assets, buffer, fd, re, numFound,
         i, j;
@@ -562,6 +562,9 @@ function extractFile(inPath, file, outPath, excludeFiles, useRegExp) {
                 console.log("Extracted " + numFound + " matching asset" + (numFound > 1 ? "s" : ""));
             } else {
                 console.log("No matching assets found");
+            }
+            if (callback) {
+                callback();
             }
         }
     }
