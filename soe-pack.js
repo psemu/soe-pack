@@ -51,10 +51,10 @@ function readPackFile(filePath, file, callback) {
         fd, i, offset = 0,
         numAssets, nextOffset;
 
-    filePath = path.join(filePath, file)
+    filePath = path.join(filePath, file);
     fs.open(filePath, "r", function(err, fd) {
         do {
-            nextOffset = readUInt32BE(fd, offset)
+            nextOffset = readUInt32BE(fd, offset);
             offset += 4;
             numAssets = readUInt32BE(fd, offset);
             offset += 4;
@@ -86,7 +86,7 @@ function readPackFileFromBuffer(data, callback) {
         fd, i, offset = 0,
         numAssets, nextOffset;
     do {
-        nextOffset = data.readUInt32BE(offset)
+        nextOffset = data.readUInt32BE(offset);
         offset += 4;
         numAssets = data.readUInt32BE(offset);
         offset += 4;
@@ -134,7 +134,7 @@ function append(inFile1, inFile2, outFile) {
     
     do {
         offset = nextOffset;
-        nextOffset = data1.readUInt32BE(offset)
+        nextOffset = data1.readUInt32BE(offset);
     } while (nextOffset);
     
     appendOffset = data1.length;
@@ -143,7 +143,7 @@ function append(inFile1, inFile2, outFile) {
     console.log("Rewriting offsets");
     offset = 0;
     do {
-        nextOffset = data2.readUInt32BE(offset)
+        nextOffset = data2.readUInt32BE(offset);
         outData.writeUInt32BE(nextOffset ? appendOffset + nextOffset : 0, appendOffset + offset);
         offset += 4;
         
@@ -176,7 +176,7 @@ function manifest(inPath, outFile, excludeFiles) {
             readPackFile(inPath, file, function(err, packAssets) {
                 assets = assets.concat(packAssets);
                 readNextFile();
-            })
+            });
         } else {
             process.stdout.write("\r\n");
             console.log("Writing manifest to " + outFile);
@@ -222,7 +222,7 @@ function readManifest(file) {
 }
 
 function diff(oldManifestPath, newManifestPath, outFile) {
-    var oldManifest, newManifest,
+    var oldManifest, newManifest, a,
         changes = {
             added: [],
             deleted: [],
@@ -234,7 +234,7 @@ function diff(oldManifestPath, newManifestPath, outFile) {
     oldManifest = readManifest(oldManifestPath);
     newManifest = readManifest(newManifestPath);
 
-    for (var a in newManifest) {
+    for (a in newManifest) {
         if (newManifest.hasOwnProperty(a)) {
             if (oldManifest[a]) {
                 if (newManifest[a].crc32 != oldManifest[a].crc32) {
@@ -251,7 +251,7 @@ function diff(oldManifestPath, newManifestPath, outFile) {
             }
         }
     }
-    for (var a in oldManifest) {
+    for (a in oldManifest) {
         if (oldManifest.hasOwnProperty(a)) {
             if (!newManifest[a]) {
                 changes.deleted.push(oldManifest[a]);
@@ -345,6 +345,56 @@ function pack(inPath, outPath) {
     return true;
 }
 
+function packFromBuffers(files) {
+    var packBuffer = new Buffer(0),
+        folderHeaderBuffer,
+        fileDataBuffer,
+        fileHeaderBuffer,
+        i, j, nextOffset, stat,
+        fileOffset, dataOffset, data,
+        fileHeaderLength, dataLength, nameLength;
+    
+    fileHeaderLength = 0;
+    dataLength = 0;
+
+    for (j=0;j<files.length;j++) {
+        fileHeaderLength += 16 + files[j].name.length;
+        dataLength += files[j].data.length;
+    }
+        
+    folderHeaderBuffer = new Buffer(8);
+    fileDataBuffer = new Buffer(dataLength);
+    fileHeaderBuffer = new Buffer(fileHeaderLength);
+
+    fileOffset = 0;
+    dataOffset = 0;
+        
+    for (j=0;j<files.length;j++) {
+        data = files[j].data;
+        nameLength = files[j].name.length;
+
+        fileHeaderBuffer.writeUInt32BE(nameLength, fileOffset);
+        fileHeaderBuffer.write(files[j].name, fileOffset + 4, nameLength);
+        fileHeaderBuffer.writeUInt32BE(packBuffer.length + folderHeaderBuffer.length + fileHeaderBuffer.length + dataOffset, fileOffset + nameLength + 4);
+        fileHeaderBuffer.writeUInt32BE(data.length, fileOffset + nameLength + 8);
+        fileHeaderBuffer.writeUInt32BE(crc32.unsigned(data), fileOffset + nameLength + 12);
+
+        fileOffset += 16 + nameLength;
+
+        data.copy(fileDataBuffer, dataOffset, 0);
+        dataOffset += data.length;
+    }
+        
+    nextOffset = 0;
+    
+    folderHeaderBuffer.writeUInt32BE(nextOffset, 0);
+    folderHeaderBuffer.writeUInt32BE(files.length, 4);
+
+    packBuffer = Buffer.concat([packBuffer, folderHeaderBuffer, fileHeaderBuffer, fileDataBuffer]);
+
+    return packBuffer;
+}
+
 function extractDiff(diffPath, packPath, outPath, excludeFiles) {
     if (!fs.existsSync(packPath)) {
         throw "extractDiff(): packPath does not exist: " + packPath;
@@ -387,7 +437,7 @@ function extractDiff(diffPath, packPath, outPath, excludeFiles) {
     function extractAssets(assets, outPath, callback) {
         fs.mkdir(outPath, function(err) {
             function nextAsset() {
-                if (assets.length == 0) {
+                if (assets.length === 0) {
                     callback();
                     return;
                 }
@@ -440,8 +490,7 @@ function extractDiff(diffPath, packPath, outPath, excludeFiles) {
                     console.log("All done!");
                 });
             });
-        })
-
+        });
     });
 }
 
@@ -478,7 +527,7 @@ function extractAll(inPath, outPath, excludeFiles) {
                     fs.writeFile(path.join(packPath, asset.name), data.slice(asset.offset, asset.offset+asset.length), 
                         function() {
                             totalAssets++;
-                            if (--n == 0) {
+                            if (--n === 0) {
                                 nextPack();
                             }
                         }
@@ -530,7 +579,7 @@ function extractFile(inPath, file, outPath, excludeFiles, useRegExp, callback) {
     }
     console.log("Reading pack files in " + inPath);
     if (useRegExp) {
-        re = new RegExp(file)
+        re = new RegExp(file);
     }
     numFound = 0;
     function nextPack() {
@@ -572,6 +621,7 @@ function extractFile(inPath, file, outPath, excludeFiles, useRegExp, callback) {
 }
 
 exports.pack = pack;
+exports.packFromBuffers = packFromBuffers;
 exports.extractAll = extractAll;
 exports.extractPack = extractPack;
 exports.extractToBuffers = extractToBuffers;
