@@ -1,17 +1,18 @@
 {
   "name": "soe-pack",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A library and utility for accessing SOE pack files",
-  "homepage": "https://github.com/jseidelin/soe-pack",
-  "author": "Jacob Seidelin <jseidelin@nihilogic.dk> (https://github.com/jseidelin)",
-  "license": {
-    "type": "MIT",
-    "url": "http://github.com/jseidelin/soe-pack/raw/master/LICENSE"
+  "homepage": "https://github.com/psemu/soe-pack",
+  "author": {
+      "name" : "Jacob Seidelin", 
+      "email" : "jseidelin@nihilogic.dk", 
+      "url" : "http://github.com/jseidelin"
   },
+  "license": "MIT",
   "main": "soe-pack.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jseidelin/soe-pack.git"
+    "url": "git://github.com/psemu/soe-pack.git"
   },
   "dependencies": {
     "buffer-crc32": ">=0.2.1"
