@@ -372,7 +372,6 @@ function packFromBuffers(files) {
     for (j=0;j<files.length;j++) {
         data = files[j].data;
         nameLength = files[j].name.length;
-
         fileHeaderBuffer.writeUInt32BE(nameLength, fileOffset);
         fileHeaderBuffer.write(files[j].name, fileOffset + 4, nameLength);
         fileHeaderBuffer.writeUInt32BE(packBuffer.length + folderHeaderBuffer.length + fileHeaderBuffer.length + dataOffset, fileOffset + nameLength + 4);
@@ -384,15 +383,17 @@ function packFromBuffers(files) {
         data.copy(fileDataBuffer, dataOffset, 0);
         dataOffset += data.length;
     }
-        
     nextOffset = 0;
     
     folderHeaderBuffer.writeUInt32BE(nextOffset, 0);
     folderHeaderBuffer.writeUInt32BE(files.length, 4);
 
-    packBuffer = Buffer.concat([packBuffer, folderHeaderBuffer, fileHeaderBuffer, fileDataBuffer]);
-
-    return packBuffer;
+    var finalData = new Buffer(packBuffer.length + folderHeaderBuffer.length + fileHeaderBuffer.length + fileDataBuffer.length);
+    packBuffer.copy(finalData, 0, 0);
+    folderHeaderBuffer.copy(finalData, packBuffer.length, 0);
+    fileHeaderBuffer.copy(finalData, packBuffer.length + folderHeaderBuffer.length, 0);
+    fileDataBuffer.copy(finalData, packBuffer.length + folderHeaderBuffer.length + fileHeaderBuffer.length, 0);
+    return finalData;
 }
 
 function extractDiff(diffPath, packPath, outPath, excludeFiles) {
